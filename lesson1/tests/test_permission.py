@@ -3,13 +3,15 @@
 
 """
 from unittest import TestCase
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+import logging
+# from sqlalchemy import create_engine
+# from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import SQLAlchemyError
 from ..permission.service import PermissionService
 from .test_department import TestDepartment
-from ..models import Permission, Resource, DepartmentPermission
-from ..config.common import SQLALCHEMY_DATABASE_URI
+from ..models import Permission, Resource, DepartmentPermission, LeaderPermission
+# from ..config.common import SQLALCHEMY_DATABASE_URI
+from ..models import db
 
 
 class TestPermission(TestCase):
@@ -20,6 +22,7 @@ class TestPermission(TestCase):
     def tearDown(self):
         self.clear_all_permission_info()
 
+    """
     def test_get_user_department(self):
         dpt_srv = PermissionService()
         self.assertEqual(dpt_srv.get_user_department(1), (1, '1'))
@@ -33,6 +36,7 @@ class TestPermission(TestCase):
         self.assertEqual(dpt_srv.get_user_department(0), (None, None))
         self.assertEqual(dpt_srv.get_user_department(-1), (None, None))
         self.assertEqual(dpt_srv.get_user_department(25), (None, None))
+    """
 
     def test_get_user_permissions(self):
         # raise NotImplementedError()
@@ -71,11 +75,6 @@ class TestPermission(TestCase):
 
     @staticmethod
     def add_resource():
-        engine = create_engine(SQLALCHEMY_DATABASE_URI)
-        # 通过绑定数据库引擎获取数据库会话类
-        db_session = sessionmaker(bind=engine)
-        # 获取数据库会话
-        session = db_session()
         try:
             # 添加员工数据
             resource_list = list([])
@@ -84,24 +83,16 @@ class TestPermission(TestCase):
             resource_list.append(Resource(id=3, name='客户端研发部资源'))
             resource_list.append(Resource(id=4, name='研发部资源'))
 
-            session.add_all(resource_list)
-            session.commit()
+            db.session.add_all(resource_list)
+            db.session.commit()
 
             # print("add resource info")
 
         except SQLAlchemyError as e:
-            print("Error: SQL Execute error", e)
-
-        finally:
-            session.close()
+            logging.error("SQL Execute error: %s", e)
 
     @staticmethod
     def add_permission():
-        engine = create_engine(SQLALCHEMY_DATABASE_URI)
-        # 通过绑定数据库引擎获取数据库会话类
-        db_session = sessionmaker(bind=engine)
-        # 获取数据库会话
-        session = db_session()
         try:
             # 添加员工数据
             permission_list = list([])
@@ -122,54 +113,58 @@ class TestPermission(TestCase):
             permission_list.append(Permission(id=15, resource_id=4, action='删除'))
             permission_list.append(Permission(id=16, resource_id=4, action='查看'))
 
-            session.add_all(permission_list)
-            session.commit()
+            db.session.add_all(permission_list)
+            db.session.commit()
 
             # print("add permission info")
 
         except SQLAlchemyError as e:
-            print("Error: SQL Execute error", e)
-
-        finally:
-            session.close()
+            logging.error("SQL Execute error: %s", e)
 
     @staticmethod
     def add_department_permission():
-        engine = create_engine(SQLALCHEMY_DATABASE_URI)
-        # 通过绑定数据库引擎获取数据库会话类
-        db_session = sessionmaker(bind=engine)
-        # 获取数据库会话
-        session = db_session()
         try:
             # 添加员工数据
             department_permission_list = list([])
             department_permission_list.\
-                append(DepartmentPermission(id=1, department_id=1, permission_id=4, leader_only=False))
+                append(DepartmentPermission(id=1, department_id=1, permission_id=4))
             department_permission_list.\
-                append(DepartmentPermission(id=2, department_id=1, permission_id=2, leader_only=False))
+                append(DepartmentPermission(id=2, department_id=1, permission_id=2))
             department_permission_list.\
-                append(DepartmentPermission(id=3, department_id=2, permission_id=16, leader_only=False))
+                append(DepartmentPermission(id=3, department_id=2, permission_id=16))
             department_permission_list.\
-                append(DepartmentPermission(id=4, department_id=7, permission_id=12, leader_only=False))
+                append(DepartmentPermission(id=4, department_id=7, permission_id=12))
             department_permission_list.\
-                append(DepartmentPermission(id=5, department_id=10, permission_id=8, leader_only=False))
-            department_permission_list.\
-                append(DepartmentPermission(id=6, department_id=10, permission_id=6, leader_only=True))
-            department_permission_list.\
-                append(DepartmentPermission(id=7, department_id=7, permission_id=10, leader_only=True))
-            department_permission_list.\
-                append(DepartmentPermission(id=8, department_id=2, permission_id=14, leader_only=True))
+                append(DepartmentPermission(id=5, department_id=10, permission_id=8))
 
-            session.add_all(department_permission_list)
-            session.commit()
+            db.session.add_all(department_permission_list)
+            db.session.commit()
 
             # print("add department permission info")
 
         except SQLAlchemyError as e:
-            print("Error: SQL Execute error", e)
+            logging.error("SQL Execute error: %s", e)
 
-        finally:
-            session.close()
+    @staticmethod
+    def add_leader_permission():
+        try:
+            # 添加员工数据
+            leader_permission_list = list([])
+            leader_permission_list.\
+                append(LeaderPermission(id=1, department_id=10, permission_id=6))
+            leader_permission_list.\
+                append(LeaderPermission(id=2, department_id=7, permission_id=10))
+            leader_permission_list.\
+                append(LeaderPermission(id=3, department_id=2, permission_id=14))
+
+            db.session.add_all(leader_permission_list)
+            db.session.commit()
+
+            # print("add department permission info")
+
+        except SQLAlchemyError as e:
+            logging.error("SQL Execute error: %s", e)
+
 
     @staticmethod
     def add_all_permission_info():
@@ -177,27 +172,21 @@ class TestPermission(TestCase):
         TestPermission.add_resource()
         TestPermission.add_permission()
         TestPermission.add_department_permission()
+        TestPermission.add_leader_permission()
         # print("add all permission info")
 
     @staticmethod
     def clear_all_permission_info():
         TestDepartment.clear_all_employee_info()
 
-        engine = create_engine(SQLALCHEMY_DATABASE_URI)
-        # 通过绑定数据库引擎获取数据库会话类
-        db_session = sessionmaker(bind=engine)
-        # 获取数据库会话
-        session = db_session()
         try:
-            session.query(Resource).delete()
-            session.query(Permission).delete()
-            session.query(DepartmentPermission).delete()
+            Resource.query.delete()
+            Permission.query.delete()
+            DepartmentPermission.query.delete()
+            LeaderPermission.query.delete()
 
-            session.commit()
+            db.session.commit()
             # print("clear all permission info")
 
         except SQLAlchemyError as e:
-            print("Error: SQL Execute error", e)
-
-        finally:
-            session.close()
+            logging.error("SQL Execute error: %s", e)

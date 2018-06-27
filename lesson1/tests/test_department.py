@@ -3,12 +3,14 @@
 
 """
 from unittest import TestCase
-from ..department.service import DepartmentService
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+import logging
+# from sqlalchemy import create_engine
+# from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import SQLAlchemyError
-from ..models import EmployeeDepartment, DepartmentTree, Employee, Department
-from ..config.common import SQLALCHEMY_DATABASE_URI
+from ..department.service import DepartmentService
+from ..models import DepartmentClosure, Employee, Department
+# from ..config.common import SQLALCHEMY_DATABASE_URI
+from ..models import db
 
 
 class TestDepartment(TestCase):
@@ -55,59 +57,47 @@ class TestDepartment(TestCase):
 
     @staticmethod
     def add_employee():
-        engine = create_engine(SQLALCHEMY_DATABASE_URI)
-        # 通过绑定数据库引擎获取数据库会话类
-        db_session = sessionmaker(bind=engine)
-        # 获取数据库会话
-        session = db_session()
         try:
             # 添加员工数据
             employee_list = list([])
-            employee_list.append(Employee(id=1, name='公司总裁', leader_id=1))
-            employee_list.append(Employee(id=2, name='研发部经理', leader_id=1))
-            employee_list.append(Employee(id=3, name='营销部经理', leader_id=1))
-            employee_list.append(Employee(id=4, name='行政部经理', leader_id=1))
-            employee_list.append(Employee(id=5, name='市场部部长', leader_id=3))
-            employee_list.append(Employee(id=6, name='销售部部长', leader_id=3))
-            employee_list.append(Employee(id=7, name='客户端研发部部长', leader_id=2))
-            employee_list.append(Employee(id=8, name='服务端研发部部长', leader_id=2))
-            employee_list.append(Employee(id=9, name='Android研发部Leader', leader_id=7))
-            employee_list.append(Employee(id=10, name='iOS研发部Leader', leader_id=7))
-            employee_list.append(Employee(id=11, name='API研发部Leader', leader_id=8))
-            employee_list.append(Employee(id=12, name='Infrastructure研发部Leader', leader_id=8))
-            employee_list.append(Employee(id=13, name='市场部员工1', leader_id=5))
-            employee_list.append(Employee(id=14, name='市场部员工2', leader_id=5))
-            employee_list.append(Employee(id=15, name='销售部员工1', leader_id=6))
-            employee_list.append(Employee(id=16, name='销售部员工2', leader_id=6))
-            employee_list.append(Employee(id=17, name='行政部员工1', leader_id=4))
-            employee_list.append(Employee(id=18, name='Android研发部员工1', leader_id=9))
-            employee_list.append(Employee(id=19, name='Android研发部员工2', leader_id=9))
-            employee_list.append(Employee(id=20, name='Android研发部员工3', leader_id=9))
-            employee_list.append(Employee(id=21, name='iOS研发部员工1', leader_id=10))
-            employee_list.append(Employee(id=22, name='iOS研发部员工2', leader_id=10))
-            employee_list.append(Employee(id=23, name='API研发部员工1', leader_id=11))
-            employee_list.append(Employee(id=24, name='Infrastructure研发部员工1', leader_id=12))
+            employee_list.append(Employee(id=1, name='公司总裁', leader_id=1, department_id=1))
+            employee_list.append(Employee(id=2, name='研发部经理', leader_id=1, department_id=2))
+            employee_list.append(Employee(id=3, name='营销部经理', leader_id=1, department_id=3))
+            employee_list.append(Employee(id=4, name='行政部经理', leader_id=1, department_id=4))
+            employee_list.append(Employee(id=5, name='市场部部长', leader_id=3, department_id=5))
+            employee_list.append(Employee(id=6, name='销售部部长', leader_id=3, department_id=6))
+            employee_list.append(Employee(id=7, name='客户端研发部部长', leader_id=2, department_id=7))
+            employee_list.append(Employee(id=8, name='服务端研发部部长', leader_id=2, department_id=8))
+            employee_list.append(Employee(id=9, name='Android研发部Leader', leader_id=7, department_id=9))
+            employee_list.append(Employee(id=10, name='iOS研发部Leader', leader_id=7, department_id=10))
+            employee_list.append(Employee(id=11, name='API研发部Leader', leader_id=8, department_id=11))
+            employee_list.append(Employee(id=12, name='Infrastructure研发部Leader', leader_id=8, department_id=12))
+            employee_list.append(Employee(id=13, name='市场部员工1', leader_id=5, department_id=5))
+            employee_list.append(Employee(id=14, name='市场部员工2', leader_id=5, department_id=5))
+            employee_list.append(Employee(id=15, name='销售部员工1', leader_id=6, department_id=6))
+            employee_list.append(Employee(id=16, name='销售部员工2', leader_id=6, department_id=6))
+            employee_list.append(Employee(id=17, name='行政部员工1', leader_id=4, department_id=4))
+            employee_list.append(Employee(id=18, name='Android研发部员工1', leader_id=9, department_id=9))
+            employee_list.append(Employee(id=19, name='Android研发部员工2', leader_id=9, department_id=9))
+            employee_list.append(Employee(id=20, name='Android研发部员工3', leader_id=9, department_id=9))
+            employee_list.append(Employee(id=21, name='iOS研发部员工1', leader_id=10, department_id=10))
+            employee_list.append(Employee(id=22, name='iOS研发部员工2', leader_id=10, department_id=10))
+            employee_list.append(Employee(id=23, name='API研发部员工1', leader_id=11, department_id=11))
+            employee_list.append(Employee(id=24, name='Infrastructure研发部员工1', leader_id=12, department_id=12))
 
-            session.add_all(employee_list)
-            session.commit()
+            db.session.add_all(employee_list)
+            db.session.commit()
 
             # print("add employee info")
 
         except SQLAlchemyError as e:
-            print("Error: SQL Execute error", e)
-
-        finally:
-            session.close()
+            logging.error("SQL Execute error: %s", e)
 
     @staticmethod
     def add_department():
-        engine = create_engine(SQLALCHEMY_DATABASE_URI)
-        # 通过绑定数据库引擎获取数据库会话类
-        db_session = sessionmaker(bind=engine)
-        # 获取数据库会话
-        session = db_session()
+
         try:
-            # 添加员工数据
+            # 添加部门数据
             department_list = list([])
             department_list.append(Department(id=1, name='公司', leader_id=1))
             department_list.append(Department(id=2, name='研发部', leader_id=2))
@@ -122,51 +112,75 @@ class TestDepartment(TestCase):
             department_list.append(Department(id=11, name='API研发部', leader_id=11))
             department_list.append(Department(id=12, name='Infrastructure研发部', leader_id=12))
 
-            session.add_all(department_list)
-            session.commit()
+            db.session.add_all(department_list)
+            db.session.commit()
 
             # print("add department info")
 
         except SQLAlchemyError as e:
-            print("Error: SQL Execute error", e)
-
-        finally:
-            session.close()
+            logging.error("SQL Execute error: %s", e)
 
     @staticmethod
-    def add_department_tree():
-        engine = create_engine(SQLALCHEMY_DATABASE_URI)
-        # 通过绑定数据库引擎获取数据库会话类
-        db_session = sessionmaker(bind=engine)
-        # 获取数据库会话
-        session = db_session()
+    def add_department_closure():
         try:
-            # 添加员工数据
-            department_tree_list = list([])
-            department_tree_list.append(DepartmentTree(id=1, parent_path='1'))
-            department_tree_list.append(DepartmentTree(id=2, parent_path='1'))
-            department_tree_list.append(DepartmentTree(id=3, parent_path='1'))
-            department_tree_list.append(DepartmentTree(id=4, parent_path='1'))
-            department_tree_list.append(DepartmentTree(id=5, parent_path='1-3'))
-            department_tree_list.append(DepartmentTree(id=6, parent_path='1-3'))
-            department_tree_list.append(DepartmentTree(id=7, parent_path='1-2'))
-            department_tree_list.append(DepartmentTree(id=8, parent_path='1-2'))
-            department_tree_list.append(DepartmentTree(id=9, parent_path='1-2-7'))
-            department_tree_list.append(DepartmentTree(id=10, parent_path='1-2-7'))
-            department_tree_list.append(DepartmentTree(id=11, parent_path='1-2-8'))
-            department_tree_list.append(DepartmentTree(id=12, parent_path='1-2-8'))
+            # 添加部门结构数据
+            department_closure_list = list([])
+            department_closure_list.append(DepartmentClosure(id=1, department_id=1, parent_id=1, depth=0))
 
-            session.add_all(department_tree_list)
-            session.commit()
+            department_closure_list.append(DepartmentClosure(id=2, department_id=2, parent_id=1, depth=1))
+            department_closure_list.append(DepartmentClosure(id=3, department_id=2, parent_id=2, depth=0))
+
+            department_closure_list.append(DepartmentClosure(id=4, department_id=3, parent_id=1, depth=1))
+            department_closure_list.append(DepartmentClosure(id=5, department_id=3, parent_id=3, depth=0))
+
+            department_closure_list.append(DepartmentClosure(id=6, department_id=4, parent_id=1, depth=1))
+            department_closure_list.append(DepartmentClosure(id=7, department_id=4, parent_id=4, depth=0))
+
+            department_closure_list.append(DepartmentClosure(id=8, department_id=5, parent_id=1, depth=2))
+            department_closure_list.append(DepartmentClosure(id=9, department_id=5, parent_id=3, depth=1))
+            department_closure_list.append(DepartmentClosure(id=10, department_id=5, parent_id=5, depth=0))
+
+            department_closure_list.append(DepartmentClosure(id=11, department_id=6, parent_id=1, depth=2))
+            department_closure_list.append(DepartmentClosure(id=12, department_id=6, parent_id=3, depth=1))
+            department_closure_list.append(DepartmentClosure(id=13, department_id=6, parent_id=6, depth=0))
+
+            department_closure_list.append(DepartmentClosure(id=14, department_id=7, parent_id=1, depth=2))
+            department_closure_list.append(DepartmentClosure(id=15, department_id=7, parent_id=2, depth=1))
+            department_closure_list.append(DepartmentClosure(id=16, department_id=7, parent_id=7, depth=0))
+
+            department_closure_list.append(DepartmentClosure(id=17, department_id=8, parent_id=1, depth=2))
+            department_closure_list.append(DepartmentClosure(id=18, department_id=8, parent_id=2, depth=1))
+            department_closure_list.append(DepartmentClosure(id=19, department_id=8, parent_id=8, depth=0))
+
+            department_closure_list.append(DepartmentClosure(id=20, department_id=9, parent_id=1, depth=3))
+            department_closure_list.append(DepartmentClosure(id=21, department_id=9, parent_id=2, depth=2))
+            department_closure_list.append(DepartmentClosure(id=22, department_id=9, parent_id=7, depth=1))
+            department_closure_list.append(DepartmentClosure(id=23, department_id=9, parent_id=9, depth=0))
+
+            department_closure_list.append(DepartmentClosure(id=24, department_id=10, parent_id=1, depth=3))
+            department_closure_list.append(DepartmentClosure(id=25, department_id=10, parent_id=2, depth=2))
+            department_closure_list.append(DepartmentClosure(id=26, department_id=10, parent_id=7, depth=1))
+            department_closure_list.append(DepartmentClosure(id=27, department_id=10, parent_id=10, depth=0))
+
+            department_closure_list.append(DepartmentClosure(id=28, department_id=11, parent_id=1, depth=3))
+            department_closure_list.append(DepartmentClosure(id=29, department_id=11, parent_id=2, depth=2))
+            department_closure_list.append(DepartmentClosure(id=30, department_id=11, parent_id=8, depth=1))
+            department_closure_list.append(DepartmentClosure(id=31, department_id=11, parent_id=11, depth=0))
+
+            department_closure_list.append(DepartmentClosure(id=32, department_id=12, parent_id=1, depth=3))
+            department_closure_list.append(DepartmentClosure(id=33, department_id=12, parent_id=2, depth=2))
+            department_closure_list.append(DepartmentClosure(id=34, department_id=12, parent_id=8, depth=1))
+            department_closure_list.append(DepartmentClosure(id=35, department_id=12, parent_id=12, depth=0))
+
+            db.session.add_all(department_closure_list)
+            db.session.commit()
 
             # print("add department_tree info")
 
         except SQLAlchemyError as e:
-            print("Error: SQL Execute error", e)
+            logging.error("SQL Execute error: %s", e)
 
-        finally:
-            session.close()
-
+    """
     @staticmethod
     def add_employee_department():
         engine = create_engine(SQLALCHEMY_DATABASE_URI)
@@ -212,32 +226,24 @@ class TestDepartment(TestCase):
 
         finally:
             session.close()
+    """
 
     @staticmethod
     def add_all_employee_info():
         TestDepartment.add_employee()
         TestDepartment.add_department()
-        TestDepartment.add_department_tree()
-        TestDepartment.add_employee_department()
+        TestDepartment.add_department_closure()
         # print("add all employee info")
 
     @staticmethod
     def clear_all_employee_info():
-        engine = create_engine(SQLALCHEMY_DATABASE_URI)
-        # 通过绑定数据库引擎获取数据库会话类
-        db_session = sessionmaker(bind=engine)
-        # 获取数据库会话
-        session = db_session()
         try:
-            session.query(Employee).delete()
-            session.query(Department).delete()
-            session.query(DepartmentTree).delete()
-            session.query(EmployeeDepartment).delete()
-            session.commit()
+            Employee.query.delete()
+            Department.query.delete()
+            DepartmentClosure.query.delete()
+            db.session.commit()
             # print("clear all employee info")
 
         except SQLAlchemyError as e:
-            print("Error: SQL Execute error", e)
+            logging.error("SQL Execute error: %s", e)
 
-        finally:
-            session.close()
